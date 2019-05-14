@@ -10,10 +10,16 @@ final class Router
      */
     public function route(array $boardingCards)
     {
-        $chain = new TransportChain();
+        /** @var TransportChain[] $chains */
+        $chains = [];
         foreach ($boardingCards as $boardingCard) {
-            $chain->extend($boardingCard);
+            foreach ($chains as $chain) {
+                if ($chain->isExtendableBy($boardingCard)) {
+                    $chain->extend($boardingCard);
+                }
+            }
         }
+
         return $chain;
     }
 }
