@@ -9,28 +9,20 @@ use TravelRouter\Domain\TransportChain;
 
 class TransportChainTest extends TestCase
 {
-    public function testNewChainCanBeEmpty()
+    public function testChainCanBeCreatedWithABoardingCard()
     {
-        $chain = new TransportChain();
-        $this->assertEmpty($chain->boardingCards());
-    }
-
-    public function testCardsExtendsChains()
-    {
-        $chain = new TransportChain();
         $boardingCard = new BoardingCard('Warsaw', 'Berlin', 'train', '16b', '');
-        $chain->extend($boardingCard);
+        $chain = new TransportChain($boardingCard);
         $this->assertSame($boardingCard, $chain->boardingCards()[0]);
     }
 
     public function testChainIsExtendedOnTheLastPositionWhenTheLastDestinationIsNewCardOrigin()
     {
-        $chain = new TransportChain();
         $interChange = 'Berlin';
         $cardToInterchange = new BoardingCard('Warsaw', $interChange, 'train', '16b', '');
         $cardFromInterchange = new BoardingCard($interChange, 'Dusseldorf', 'train', '123A', '');
+        $chain = new TransportChain($cardToInterchange);
 
-        $chain->extend($cardToInterchange);
         $chain->extend($cardFromInterchange);
 
         $this->assertSame($cardToInterchange, $chain->boardingCards()[0]);
@@ -39,12 +31,11 @@ class TransportChainTest extends TestCase
 
     public function testChainIsExtendedOnTheBeginningWhenOriginIsNewCardDestination()
     {
-        $chain = new TransportChain();
         $interChange = 'Berlin';
         $cardToInterchange = new BoardingCard('Warsaw', $interChange, 'train', '16b', '');
         $cardFromInterchange = new BoardingCard($interChange, 'Dusseldorf', 'train', '123A', '');
 
-        $chain->extend($cardFromInterchange);
+        $chain = new TransportChain($cardFromInterchange);
         $chain->extend($cardToInterchange);
 
         $this->assertSame($cardToInterchange, $chain->boardingCards()[0]);
@@ -53,11 +44,9 @@ class TransportChainTest extends TestCase
 
     public function testChainThrowsExceptionWhenIsExtendendenWithTicketThatNotFits()
     {
-        $chain = new TransportChain();
         $cardInEurope = new BoardingCard('Warsaw', 'Berlin', 'train', '16b', '');
         $cardInAsia = new BoardingCard('Doha', 'Dubai', 'plane', '17F', 'cabin luggage only');
-
-        $chain->extend($cardInAsia);
+        $chain = new TransportChain($cardInAsia);
 
         $this->expectException(BoardingCardCanNotExtendTravelChainException::class);
         $chain->extend($cardInEurope);
@@ -65,12 +54,10 @@ class TransportChainTest extends TestCase
 
     public function testChainSaysIfIsExtendableByBoardingCardInTheBeginningAndAtTheEnd()
     {
-        $chain = new TransportChain();
         $frontBoardingCard = new BoardingCard('Warsaw', 'Berlin', 'train', '16b', '');
         $middleBoardingCard = new BoardingCard('Berlin', 'Amsterdam', 'train', 'A443', '');
         $backBoardingCard = new BoardingCard('Amsterdam', 'London', 'train', '556', 'crossing international border');
-
-        $chain->extend($middleBoardingCard);
+        $chain = new TransportChain($middleBoardingCard);
 
         $this->assertTrue($chain->isExtendableBy($frontBoardingCard));
         $this->assertTrue($chain->isExtendableBy($backBoardingCard));
@@ -78,12 +65,11 @@ class TransportChainTest extends TestCase
 
     public function testChainSaysIfItIsNotExtendableByCardFromSomewhereElse()
     {
-        $chain = new TransportChain();
         $asianBoardingCard = new BoardingCard('Beijing', 'Seoul', 'train', '16b', '');
         $europeanBorgindCard = new BoardingCard('Berlin', 'Amsterdam', 'train', 'A443', '');
         $americanBoardingCard = new BoardingCard('New York', 'Mexico City', 'train', '556', 'crossing international border');
 
-        $chain->extend($europeanBorgindCard);
+        $chain = new TransportChain($europeanBorgindCard);
 
         $this->assertFalse($chain->isExtendableBy($asianBoardingCard));
         $this->assertFalse($chain->isExtendableBy($americanBoardingCard));

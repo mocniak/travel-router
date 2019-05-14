@@ -4,6 +4,10 @@ namespace TravelRouter\Domain;
 
 final class Router
 {
+    public function __construct()
+    {
+    }
+
     /**
      * @param BoardingCard[] $boardingCards
      * @return TransportChain
@@ -11,15 +15,8 @@ final class Router
     public function route(array $boardingCards)
     {
         /** @var TransportChain[] $chains */
-        $chains = [];
         foreach ($boardingCards as $boardingCard) {
-            foreach ($chains as $chain) {
-                if ($chain->isExtendableBy($boardingCard)) {
-                    $chain->extend($boardingCard);
-                }
-            }
         }
-
         return $chain;
     }
 }

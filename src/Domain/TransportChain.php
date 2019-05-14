@@ -11,9 +11,9 @@ final class TransportChain
      */
     private $boardingCards;
 
-    public function __construct()
+    public function __construct(BoardingCard $card)
     {
-        $this->boardingCards = [];
+        $this->boardingCards = [$card];
     }
 
     /**
