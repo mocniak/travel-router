@@ -46,6 +46,36 @@ class RouterTest extends TestCase
         $this->assertSame($edgeCard2, $chain->boardingCards()[2]);
     }
 
+    public function testRouterHandlesConnectingARouteAroundTheWorld()
+    {
+        $cards = [
+            new BoardingCard('Berlin', 'Dusseldorf', 'train', '123A', ''),
+            new BoardingCard('Dusseldorf', 'Amsterdam', 'train', '123A', ''),
+            new BoardingCard('Warsaw', 'Berlin', 'train', '16b', ''),
+            new BoardingCard('Amsterdam', 'Brussels', 'train', '123A', ''),
+            new BoardingCard('Brussels', 'Paris', 'train', '123A', ''),
+            new BoardingCard('London', 'New York', 'train', '123A', ''),
+            new BoardingCard('Chicago', 'Los Angeles', 'train', '123A', ''),
+            new BoardingCard('Paris', 'London', 'train', '123A', ''),
+            new BoardingCard('Los Angeles', 'Honolulu', 'train', '123A', ''),
+            new BoardingCard('New York', 'Chicago', 'train', '123A', ''),
+            new BoardingCard('Honolulu', 'Tokio', 'train', '123A', ''),
+            new BoardingCard('Tokio', 'Osaka', 'train', '123A', ''),
+            new BoardingCard('Osaka', 'Pyongyang', 'train', '123A', ''),
+            new BoardingCard('Pyongyang', 'Beijing', 'train', '123A', ''),
+            new BoardingCard('Beijing', 'Moscow', 'train', '123A', ''),
+            new BoardingCard('Moscow', 'Minsk', 'train', '123A', ''),
+            new BoardingCard('Minsk', 'Kiev', 'train', '123A', ''),
+        ];
+
+        shuffle($cards);
+
+        $chain = $this->router->route($cards);
+
+        $this->assertEquals('Warsaw', $chain->origin());
+        $this->assertEquals('Kiev', $chain->destination());
+    }
+
     public function testWhenRoutesDoesNotMakeASingleTripRouterThrowsAnException()
     {
         $boardingCard1 = new BoardingCard('Warsaw', 'Berlin', 'train', '16b', '');

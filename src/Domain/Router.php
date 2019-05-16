@@ -6,10 +6,6 @@ use TravelRouter\Domain\Exception\BoardingCardsDoesNotMakeASingleTripException;
 
 final class Router
 {
-    public function __construct()
-    {
-    }
-
     /**
      * @param BoardingCard[] $boardingCards
      * @return TransportChain
@@ -25,14 +21,18 @@ final class Router
             if (empty($chains)) {
                 $chains[] = TransportChain::createWithBoardingCard($boardingCard);
             } else {
+                $chainWasAppended = false;
                 foreach ($chains as $chain) {
-                    if ($chain->isExtendableBy($boardingCard)) {
-                        $chain->extend($boardingCard);
-                        $chains = $this->mergeChains($chains, $chain);
+                    if (!$chain->isExtendableBy($boardingCard)) {
                         continue;
-                    } else {
-                        $chains[] = TransportChain::createWithBoardingCard($boardingCard);
                     }
+                    $chain->extend($boardingCard);
+                    $chains = $this->mergeChains($chains, $chain);
+                    $chainWasAppended = true;
+                    break;
+                }
+                if (!$chainWasAppended) {
+                    $chains[] = TransportChain::createWithBoardingCard($boardingCard);
                 }
             }
         }
