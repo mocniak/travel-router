@@ -3,6 +3,7 @@
 namespace TravelRouter\Domain;
 
 use TravelRouter\Domain\Exception\BoardingCardCanNotExtendTravelChainException;
+use TravelRouter\Domain\Exception\ChainsCanNotBeMergedException;
 
 final class TransportChain
 {
@@ -11,9 +12,25 @@ final class TransportChain
      */
     private $boardingCards;
 
-    public function __construct(BoardingCard $card)
+    private function __construct()
     {
-        $this->boardingCards = [$card];
+        $this->boardingCards = [];
+    }
+
+    public static function createWithBoardingCard(BoardingCard $card): self
+    {
+        $chain = new self();
+        $chain->boardingCards[] = $card;
+
+        return $chain;
+    }
+
+    public function clone(): self
+    {
+        $clonedChain = new self();
+        $clonedChain->boardingCards = $this->boardingCards;
+
+        return $clonedChain;
     }
 
     /**
@@ -54,13 +71,51 @@ final class TransportChain
         return false;
     }
 
+    public function isMergableWith(TransportChain $otherChain): bool
+    {
+        if ($this->origin() === $otherChain->destination()) {
+            return true;
+        }
+        if ($this->destination() === $otherChain->origin()) {
+            return true;
+        }
+        return false;
+    }
+
     public function origin(): string
     {
         return $this->boardingCards[0]->origin();
     }
 
-    private function destination(): string
+    public function destination(): string
     {
         return end($this->boardingCards)->destination();
+    }
+
+    /**
+     * @param TransportChain $chain
+     * @return TransportChain
+     * @throws BoardingCardCanNotExtendTravelChainException
+     * @throws ChainsCanNotBeMergedException
+     */
+    public function merge(TransportChain $chain)
+    {
+        if ($this->isMergableWith($chain)) {
+            if ($this->origin() === $chain->destination()) {
+                $mergedChain = $chain->clone();
+                foreach ($this->boardingCards as $card) {
+                    $mergedChain->extend($card);
+                }
+                return $mergedChain;
+            }
+            if ($this->destination() === $chain->origin()) {
+                $mergedChain = $this->clone();
+                foreach ($chain->boardingCards as $card) {
+                    $mergedChain->extend($card);
+                }
+                return $mergedChain;
+            }
+        }
+        throw new ChainsCanNotBeMergedException();
     }
 }

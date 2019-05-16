@@ -12,7 +12,7 @@ class TransportChainTest extends TestCase
     public function testChainCanBeCreatedWithABoardingCard()
     {
         $boardingCard = new BoardingCard('Warsaw', 'Berlin', 'train', '16b', '');
-        $chain = new TransportChain($boardingCard);
+        $chain = TransportChain::createWithBoardingCard($boardingCard);
         $this->assertSame($boardingCard, $chain->boardingCards()[0]);
     }
 
@@ -21,7 +21,7 @@ class TransportChainTest extends TestCase
         $interChange = 'Berlin';
         $cardToInterchange = new BoardingCard('Warsaw', $interChange, 'train', '16b', '');
         $cardFromInterchange = new BoardingCard($interChange, 'Dusseldorf', 'train', '123A', '');
-        $chain = new TransportChain($cardToInterchange);
+        $chain = TransportChain::createWithBoardingCard($cardToInterchange);
 
         $chain->extend($cardFromInterchange);
 
@@ -35,7 +35,7 @@ class TransportChainTest extends TestCase
         $cardToInterchange = new BoardingCard('Warsaw', $interChange, 'train', '16b', '');
         $cardFromInterchange = new BoardingCard($interChange, 'Dusseldorf', 'train', '123A', '');
 
-        $chain = new TransportChain($cardFromInterchange);
+        $chain = TransportChain::createWithBoardingCard($cardFromInterchange);
         $chain->extend($cardToInterchange);
 
         $this->assertSame($cardToInterchange, $chain->boardingCards()[0]);
@@ -46,7 +46,7 @@ class TransportChainTest extends TestCase
     {
         $cardInEurope = new BoardingCard('Warsaw', 'Berlin', 'train', '16b', '');
         $cardInAsia = new BoardingCard('Doha', 'Dubai', 'plane', '17F', 'cabin luggage only');
-        $chain = new TransportChain($cardInAsia);
+        $chain = TransportChain::createWithBoardingCard($cardInAsia);
 
         $this->expectException(BoardingCardCanNotExtendTravelChainException::class);
         $chain->extend($cardInEurope);
@@ -57,7 +57,7 @@ class TransportChainTest extends TestCase
         $frontBoardingCard = new BoardingCard('Warsaw', 'Berlin', 'train', '16b', '');
         $middleBoardingCard = new BoardingCard('Berlin', 'Amsterdam', 'train', 'A443', '');
         $backBoardingCard = new BoardingCard('Amsterdam', 'London', 'train', '556', 'crossing international border');
-        $chain = new TransportChain($middleBoardingCard);
+        $chain = TransportChain::createWithBoardingCard($middleBoardingCard);
 
         $this->assertTrue($chain->isExtendableBy($frontBoardingCard));
         $this->assertTrue($chain->isExtendableBy($backBoardingCard));
@@ -69,9 +69,35 @@ class TransportChainTest extends TestCase
         $europeanBorgindCard = new BoardingCard('Berlin', 'Amsterdam', 'train', 'A443', '');
         $americanBoardingCard = new BoardingCard('New York', 'Mexico City', 'train', '556', 'crossing international border');
 
-        $chain = new TransportChain($europeanBorgindCard);
+        $chain = TransportChain::createWithBoardingCard($europeanBorgindCard);
 
         $this->assertFalse($chain->isExtendableBy($asianBoardingCard));
         $this->assertFalse($chain->isExtendableBy($americanBoardingCard));
+    }
+
+    public function testChainReturnsNewMergedChain()
+    {
+        $firstCard = new BoardingCard('Warsaw', 'Berlin', 'train', '16b', '');
+        $secondCard = new BoardingCard('Berlin', 'Amsterdam', 'train', 'A443', '');
+        $frontChain = TransportChain::createWithBoardingCard($firstCard);
+        $backChain = TransportChain::createWithBoardingCard($secondCard);
+
+        $mergedChain = $frontChain->merge($backChain);
+
+        $this->assertEquals($frontChain->origin(), $mergedChain->origin());
+        $this->assertEquals($backChain->destination(), $mergedChain->destination());
+    }
+
+    public function testChainCloneReturnsDifferentObjectWithEqualValues()
+    {
+        $card = new BoardingCard('Berlin', 'Amsterdam', 'train', 'A443', '');
+        $secondCard = new BoardingCard('Amsterdam', 'Paris', 'train', '123', '');
+        $chain = TransportChain::createWithBoardingCard($card);
+
+        $clonedChain = $chain->clone();
+
+        $this->assertEquals($chain->boardingCards(), $clonedChain->boardingCards());
+        $clonedChain->extend($secondCard);
+        $this->assertNotEquals($chain->destination(), $clonedChain->destination());
     }
 }
