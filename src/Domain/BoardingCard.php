@@ -2,7 +2,7 @@
 
 namespace TravelRouter\Domain;
 
-class BoardingCard
+final class BoardingCard
 {
     private $origin;
     private $destination;
@@ -14,8 +14,8 @@ class BoardingCard
         string $origin,
         string $destination,
         string $modeOfTransport,
-        string $seat,
-        string $comment
+        ?string $seat,
+        ?string $comment
     )
     {
         $this->origin = $origin;
@@ -40,12 +40,12 @@ class BoardingCard
         return $this->modeOfTransport;
     }
 
-    public function seat(): string
+    public function seat(): ?string
     {
         return $this->seat;
     }
 
-    public function comment(): string
+    public function comment(): ?string
     {
         return $this->comment;
     }

@@ -15,6 +15,7 @@ final class Router
      * @return TransportChain
      * @throws Exception\BoardingCardCanNotExtendTravelChainException
      * @throws BoardingCardsDoesNotMakeASingleTripException
+     * @throws Exception\ChainsCanNotBeMergedException
      */
     public function route(array $boardingCards)
     {
@@ -43,6 +44,8 @@ final class Router
      * @param TransportChain[] $chains
      * @param TransportChain $chainToMerge
      * @return TransportChain[]
+     * @throws Exception\BoardingCardCanNotExtendTravelChainException
+     * @throws Exception\ChainsCanNotBeMergedException
      */
     public function mergeChains(array $chains, TransportChain $chainToMerge): array
     {

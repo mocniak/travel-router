@@ -2,6 +2,8 @@
 
 namespace TravelRouter\Domain\Exception;
 
-class ChainsCanNotBeMergedException extends \Exception
+use Exception;
+
+class ChainsCanNotBeMergedException extends Exception
 {
 }
