@@ -95,27 +95,30 @@ final class TransportChain
     /**
      * @param TransportChain $chain
      * @return TransportChain
-     * @throws BoardingCardCanNotExtendTravelChainException
      * @throws ChainsCanNotBeMergedException
      */
-    public function merge(TransportChain $chain)
+    public function merge(TransportChain $chain): TransportChain
     {
-        if ($this->isMergableWith($chain)) {
-            if ($this->origin() === $chain->destination()) {
-                $mergedChain = $chain->clone();
-                foreach ($this->boardingCards as $card) {
-                    $mergedChain->extend($card);
+        try {
+
+            if ($this->isMergableWith($chain)) {
+                if ($this->origin() === $chain->destination()) {
+                    $mergedChain = $chain->clone();
+                    foreach ($this->boardingCards as $card) {
+                        $mergedChain->extend($card);
+                    }
+                    return $mergedChain;
                 }
-                return $mergedChain;
-            }
-            if ($this->destination() === $chain->origin()) {
-                $mergedChain = $this->clone();
-                foreach ($chain->boardingCards as $card) {
-                    $mergedChain->extend($card);
+                if ($this->destination() === $chain->origin()) {
+                    $mergedChain = $this->clone();
+                    foreach ($chain->boardingCards as $card) {
+                        $mergedChain->extend($card);
+                    }
+                    return $mergedChain;
                 }
-                return $mergedChain;
             }
+        } catch (BoardingCardCanNotExtendTravelChainException $e) {
+            throw new ChainsCanNotBeMergedException();
         }
-        throw new ChainsCanNotBeMergedException();
     }
 }

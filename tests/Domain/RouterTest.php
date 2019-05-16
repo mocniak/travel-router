@@ -21,8 +21,8 @@ class RouterTest extends TestCase
     public function testForOneBoardingCardRouterReturnsChainWithOneBoardingCard()
     {
         $boardingCard = new BoardingCard('Warsaw', 'Berlin', 'train', '16b', '');
-        $chain = $this->router->route([$boardingCard]);
-        $this->assertSame($boardingCard, $chain->boardingCards()[0]);
+        $orderedCards = $this->router->route([$boardingCard]);
+        $this->assertSame($boardingCard, $orderedCards[0]);
     }
 
     public function testForTwoBoardingCardsRouterReturnsChainWhereFirstOneHasDestinationSameAsSecondsOrigin()
@@ -30,9 +30,9 @@ class RouterTest extends TestCase
         $interChange = 'Berlin';
         $boardingCard1 = new BoardingCard('Warsaw', $interChange, 'train', '16b', '');
         $boardingCard2 = new BoardingCard($interChange, 'Dusseldorf', 'train', '123A', '');
-        $chain = $this->router->route([$boardingCard2, $boardingCard1]);
-        $this->assertSame($boardingCard1, $chain->boardingCards()[0]);
-        $this->assertSame($boardingCard2, $chain->boardingCards()[1]);
+        $orderedCards = $this->router->route([$boardingCard2, $boardingCard1]);
+        $this->assertSame($boardingCard1,$orderedCards[0]);
+        $this->assertSame($boardingCard2, $orderedCards[1]);
     }
 
     public function testRouterHandlesConnectingTwoSeparateRoutesByThirdOneInBetween()
@@ -40,10 +40,10 @@ class RouterTest extends TestCase
         $edgeCard1 = new BoardingCard('Warsaw', 'Berlin', 'train', '16b', '');
         $connectingCard = new BoardingCard('Berlin', 'Dusseldorf', 'train', '123A', '');
         $edgeCard2 = new BoardingCard('Dusseldorf', 'Strasbourg', 'train', 'E16A', '');
-        $chain = $this->router->route([$edgeCard1, $edgeCard2, $connectingCard]);
-        $this->assertSame($edgeCard1, $chain->boardingCards()[0]);
-        $this->assertSame($connectingCard, $chain->boardingCards()[1]);
-        $this->assertSame($edgeCard2, $chain->boardingCards()[2]);
+        $orderedCards = $this->router->route([$edgeCard1, $edgeCard2, $connectingCard]);
+        $this->assertSame($edgeCard1, $orderedCards[0]);
+        $this->assertSame($connectingCard, $orderedCards[1]);
+        $this->assertSame($edgeCard2, $orderedCards[2]);
     }
 
     public function testRouterHandlesConnectingARouteAroundTheWorld()
@@ -70,10 +70,10 @@ class RouterTest extends TestCase
 
         shuffle($cards);
 
-        $chain = $this->router->route($cards);
+        $orderedCards = $this->router->route($cards);
 
-        $this->assertEquals('Warsaw', $chain->origin());
-        $this->assertEquals('Kiev', $chain->destination());
+        $this->assertEquals('Warsaw', $orderedCards[0]->origin());
+        $this->assertEquals('Kiev', end($orderedCards)->destination());
     }
 
     public function testWhenRoutesDoesNotMakeASingleTripRouterThrowsAnException()

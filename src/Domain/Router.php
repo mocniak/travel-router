@@ -2,49 +2,54 @@
 
 namespace TravelRouter\Domain;
 
+use TravelRouter\Domain\Exception\BoardingCardCanNotExtendTravelChainException;
 use TravelRouter\Domain\Exception\BoardingCardsDoesNotMakeASingleTripException;
+use TravelRouter\Domain\Exception\ChainsCanNotBeMergedException;
 
 final class Router
 {
     /**
      * @param BoardingCard[] $boardingCards
-     * @return TransportChain
-     * @throws Exception\BoardingCardCanNotExtendTravelChainException
+     * @return BoardingCard[]
      * @throws BoardingCardsDoesNotMakeASingleTripException
-     * @throws Exception\ChainsCanNotBeMergedException
      */
-    public function route(array $boardingCards)
+    public function route(array $boardingCards): array
     {
         /** @var TransportChain[] $chains */
         $chains = [];
-        foreach ($boardingCards as $boardingCard) {
-            if (empty($chains)) {
-                $chains[] = TransportChain::createWithBoardingCard($boardingCard);
-            } else {
-                $chainWasAppended = false;
-                foreach ($chains as $chain) {
-                    if (!$chain->isExtendableBy($boardingCard)) {
-                        continue;
-                    }
-                    $chain->extend($boardingCard);
-                    $chains = $this->mergeChains($chains, $chain);
-                    $chainWasAppended = true;
-                    break;
-                }
-                if (!$chainWasAppended) {
+        try {
+            foreach ($boardingCards as $boardingCard) {
+                if (empty($chains)) {
                     $chains[] = TransportChain::createWithBoardingCard($boardingCard);
+                } else {
+                    $chainWasAppended = false;
+                    foreach ($chains as $chain) {
+                        if (!$chain->isExtendableBy($boardingCard)) {
+                            continue;
+                        }
+                        $chain->extend($boardingCard);
+                        $chains = $this->mergeChains($chains, $chain);
+                        $chainWasAppended = true;
+                        break;
+                    }
+                    if (!$chainWasAppended) {
+                        $chains[] = TransportChain::createWithBoardingCard($boardingCard);
+                    }
                 }
             }
+        } catch (ChainsCanNotBeMergedException | BoardingCardCanNotExtendTravelChainException $e) {
+            throw new BoardingCardsDoesNotMakeASingleTripException();
         }
-        if (count($chains) > 1) throw new BoardingCardsDoesNotMakeASingleTripException();
-        return $chains[0];
+
+        if (count($chains) !== 1) throw new BoardingCardsDoesNotMakeASingleTripException();
+
+        return $chains[0]->boardingCards();
     }
 
     /**
      * @param TransportChain[] $chains
      * @param TransportChain $chainToMerge
      * @return TransportChain[]
-     * @throws Exception\BoardingCardCanNotExtendTravelChainException
      * @throws Exception\ChainsCanNotBeMergedException
      */
     public function mergeChains(array $chains, TransportChain $chainToMerge): array
@@ -60,6 +65,7 @@ final class Router
                     return ($chainToMerge->origin() !== $chain->origin());
                 });
                 $newArray2[] = $mergedChain;
+
                 return $newArray2;
             }
         }
