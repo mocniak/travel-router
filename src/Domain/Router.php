@@ -58,15 +58,17 @@ final class Router
         foreach ($chains as $existingChain) {
             if ($existingChain->isMergableWith($chainToMerge)) {
                 $mergedChain = $existingChain->merge($chainToMerge);
-                $newArray = array_filter($chains, function (TransportChain $chain) use ($existingChain) {
+
+                // remove two old chains and add new merged one
+                $arrayWithoutExistingChain = array_filter($chains, function (TransportChain $chain) use ($existingChain) {
                     return ($existingChain->origin() !== $chain->origin());
                 });
-                $newArray2 = array_filter($newArray, function (TransportChain $chain) use ($chainToMerge) {
+                $arrayWithoutChainToMerge = array_filter($arrayWithoutExistingChain, function (TransportChain $chain) use ($chainToMerge) {
                     return ($chainToMerge->origin() !== $chain->origin());
                 });
-                $newArray2[] = $mergedChain;
+                $arrayWithoutChainToMerge[] = $mergedChain;
 
-                return $newArray2;
+                return $arrayWithoutChainToMerge;
             }
         }
         return $chains;
