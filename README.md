@@ -26,3 +26,5 @@ $router->route([
 ]);
 ```
 Returns array of the same objects which make a Warsaw –> Berlin -> Dusseldorf -> Amsterdam journey.
+
+When given cards don't make a one-way step-by-step trip Router throws a `BoardingCardsDoesNotMakeASingleTripException`.
